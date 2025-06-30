@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recepción Vehículo - TECH MOTORS</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    @media print {
+      form .row:first-of-type,
+      .buttons {
+        display: none !important;
+      }
+      body::before {
+        display: none !important;
+      }
+      /* Ocultar precio input y label en impresión pero dejar el total visible */
+      #precio-row {
+        display: none !important;
+      }
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 850px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      position: relative;
+      color: #222;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 350px;
+      height: 350px;
+      background: url('techmotorslogo.png') no-repeat center center;
+      background-size: contain;
+      opacity: 0.03;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      margin-bottom: 30px;
+      min-height: 120px;
+      padding-bottom: 10px;
+    }
+
+    #logo {
+      position: absolute;
+      top: -10px;
+      left: 0;
+      width: 80px;
+      opacity: 0.9;
+      z-index: 2;
+    }
+
+    h1 {
+      font-size: 16px;
+      color: #004080;
+      margin: 0 0 10px 0;
+      text-align: center;
+      padding-left: 100px;
+      position: relative;
+      z-index: 2;
+    }
+
+    #info-header {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 12px;
+      color: #444;
+      text-align: right;
+      z-index: 2;
+      line-height: 1.3;
+      max-width: 300px;
+    }
+
+    #info-header div {
+      margin-bottom: 2px;
+    }
+
+    #contact-info {
+      position: absolute;
+      left: 100px;
+      bottom: 0;
+      font-size: 12px;
+      color: #444;
+      line-height: 1.3;
+      max-width: 450px;
+      z-index: 2;
+    }
+
+    #contact-info div {
+      margin-bottom: 2px;
+    }
+
+    #eslogan {
+      font-size: 10px;
+      font-style: italic;
+      text-align: center;
+      color: #666;
+      margin-top: 8px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      letter-spacing: 0.05em;
+      position: relative;
+      z-index: 2;
+    }
+
+    form {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+      padding: 10px 15px 20px 15px;
+      position: relative;
+      z-index: 1;
+      font-size: 11px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    /* Ajuste para la fila de vehículo con 4 columnas */
+    .row.vehiculo-datos {
+      gap: 8px;
+    }
+
+    .col {
+      flex: 1;
+    }
+
+    /* Cambios en flex para mejor espacio en vehiculo-datos */
+    .row.vehiculo-datos .col:nth-child(1),
+    .row.vehiculo-datos .col:nth-child(2),
+    .row.vehiculo-datos .col:nth-child(3) {
+      flex: 1 1 18%;
+    }
+
+    .row.vehiculo-datos .col:nth-child(4) {
+      flex: 1 1 40%;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 11px;
+      margin-bottom: 2px;
+      display: block;
+      color: #222;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 11px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      color: #222;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 30px;
+      font-size: 11px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+      margin-bottom: 12px;
+      color: #222;
+    }
+
+    .checkbox-group label {
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    /* Nuevo estilo para la fila compacta de daños, objetos y observaciones */
+    .compact-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .compact-row > div {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .compact-row label {
+      margin-bottom: 3px;
+    }
+
+    .compact-row textarea {
+      min-height: 40px;
+      max-height: 80px;
+      font-size: 11px;
+      padding: 4px 6px;
+    }
+
+    .vehicle-diagram {
+      position: relative;
+      width: 320px;
+      height: 120px;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .vehicle-diagram img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .damage-point {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: #ccc;
+      border: 2px solid #555;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .damage-point.marked {
+      background: #d22;
+      border-color: #800;
+    }
+
+    .pt-front { top: 12px; left: 140px; }
+    .pt-rear { top: 130px; left: 140px; }
+    .pt-left-front { top: 60px; left: 100px; }
+    .pt-left-rear { top: 100px; left: 100px; }
+    .pt-right-front { top: 60px; left: 180px; }
+    .pt-right-rear { top: 100px; left: 180px; }
+
+    .firma {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      align-items: flex-end;
+      position: relative;
+    }
+
+    .firma div {
+      width: 45%;
+      text-align: center;
+      border-top: 1px solid #000;
+      font-size: 12px;
+      padding-top: 6px;
+      color: #333;
+      position: relative;
+    }
+
+    /* Para que el campo precio quede justo debajo de "Firma del Cliente" */
+    #precio-row {
+      max-width: 160px;
+      margin-left: 5px;
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+    #precio-row .col {
+      padding-left: 0;
+    }
+
+    /* Total debajo de precio, alineado a la derecha */
+    .total {
+      margin-top: 6px;
+      border-top: 1px solid #000;
+      font-size: 12px;
+      padding-top: 6px;
+      width: 160px;
+      text-align: right;
+      font-weight: 600;
+      color: #222;
+      margin-left: 5px;
+      align-self: flex-start;
+    }
+
+    .buttons {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    button {
+      background: #004080;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 3px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #002850;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <img id="logo" src="techmotorslogo.png" alt="Logo TECH MOTORS" />
+  <h1>Recepción de Vehículo - TECH MOTORS</h1>
+  <div id="info-header">
+    <div><strong>Orden:</strong> <span id="orden-header">000000</span></div>
+    <div><strong>Fecha:</strong> <span id="fecha-header">--/--/----</span></div>
+    <div><strong>Hora:</strong> <span id="hora-header">--:--</span></div>
+  </div>
+  <div id="contact-info">
+    <div><strong>Dirección:</strong> Campestre Murua, Av Sinaloa #3612 C.P. 22455, Tijuana BC</div>
+    <div><strong>Teléfono:</strong> 6634305693</div>
+    <div><strong>Correo:</strong> techmotors@gmail.com</div>
+  </div>
+  <div id="eslogan">
+    La confianza que se gana, visión que construyes, trabajo que trasciende.
+  </div>
+</header>
+
+<form id="formRecepcion">
+  <div class="row">
+    <div class="col"><label for="orden">No. Orden</label><input type="text" id="orden" maxlength="6" /></div>
+    <div class="col"><label for="fecha">Fecha</label><input type="date" id="fecha" /></div>
+    <div class="col"><label for="hora">Hora</label><input type="time" id="hora" /></div>
+  </div>
+
+  <div class="row">
+    <div class="col"><label for="nombre">Nombre cliente</label><input id="nombre" type="text" /></div>
+    <div class="col"><label for="telefono">Teléfono</label><input id="telefono" type="text" /></div>
+  </div>
+
+  <div class="row">
+    <div class="col"><label for="correo">Correo</label><input id="correo" type="email" /></div>
+    <div class="col"><label for="direccion">Dirección</label><input id="direccion" type="text" /></div>
+  </div>
+
+  <div class="row vehiculo-datos">
+    <div class="col" style="margin-bottom: 10px;"><input type ="text" id="marca" class"campo-texto" value=Nissan" style "widt: 100%padding: 4px></div>
+    <div class="col"><label for="modelo">Modelo</label><input id="modelo" type="text" /></div>
+    <div class="col"><label for="anio">Año</label><input id="anio" type="text" /></div>
+    <div class="col"><label for="serie">Serie</label><input id="serie" type="text" /></div>
+  </div>
+
+  <div class="row">
+    <div class="col"><label for="placas">Placas</label><input id="placas" type="text" /></div>
+    <div class="col"><label for="color">Color</label><input id="color" type="text" /></div>
+    <div class="col"><label for="kilometraje">Kilometraje</label><input id="kilometraje" type="text" /></div>
+  </div>
+
+  <label for="servicio">Servicio solicitado / Problemas reportados</label>
+  <textarea id="servicio" rows="2"></textarea>
+
+  <label>Estado general del vehículo al ingreso</label>
+  <div class="checkbox-group">
+    <label><input type="checkbox" name="estadoVehiculo" value="Sin daños visibles" /> Sin daños visibles</label>
+    <label><input type="checkbox" name="estadoVehiculo" value="Daños en carrocería" /> Daños en carrocería</label>
+    <label><input type="checkbox" name="estadoVehiculo" value="Otros daños" /> Candado de seguridad</label>
+  </div>
+
+  <div class="compact-row">
+    <div>
+      <label for="danosDetalle">Descripción de daños / otros daños</label>
+      <textarea id="danosDetalle" rows="2"></textarea>
+    </div>
+    <div>
+      <label for="objetosValor">Objetos de valor dentro del vehículo</label>
+      <textarea id="objetosValor" rows="2"></textarea>
+    </div>
+    <div>
+      <label for="observaciones"> observaciones adicionales</label>
+      <textarea id="observaciones" rows="2"></textarea>
+    </div>
+  </div>
+
+  <div class="vehicle-diagram" title="Vista superior vehículo">
+    <img src="vehiculo.png" alt="Vehículo" />
+    <div class="damage-point pt-front" title="Parte frontal"></div>
+    <div class="damage-point pt-left-front" title="Parachoques frontal izquierdo"></div>
+    <div class="damage-point pt-right-front" title="Parachoques frontal derecho"></div>
+    <div class="damage-point pt-rear" title="Parte trasera"></div>
+    <div class="damage-point pt-left-rear" title="Parachoques trasero izquierdo"></div>
+    <div class="damage-point pt-right-rear" title="Parachoques trasero derecho"></div>
+  </div>
+
+  <div class="firma">
+    <div>
+      Firma del Cliente
+      <div class="row" id="precio-row" style="margin-top: 6px;">
+        <div class="col">
+          <label for="precio">Precio $</label>
+          <input type="number" id="precio" min="0" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+      <div class="total">Total: $0.00</div>
+    </div>
+    <div>Firma del Asesor. Andres Mercado.</div>
+  </div>
+
+  <div class="buttons">
+    <button type="button" onclick="guardarLocal()">Guardar en navegador</button>
+    <button type="button" onclick="window.print()">Imprimir</button>
+  </div>
+</form>
+
+<script>
+  window.onload = () => {
+    const f = new Date();
+    document.getElementById('fecha').value = f.toISOString().slice(0,10);
+    document.getElementById('hora').value = f.toTimeString().slice(0,5);
+    actualizarEncabezado();
+    actualizarTotal();
+  };
+
+  const camposEncabezado = ['orden', 'fecha', 'hora'];
+  camposEncabezado.forEach(id => {
+    document.getElementById(id).addEventListener('input', actualizarEncabezado);
+  });
+
+  document.getElementById('precio').addEventListener('input', actualizarTotal);
+
+  function actualizarEncabezado() {
+    document.getElementById('orden-header').textContent = document.getElementById('orden').value || '000000';
+    document.getElementById('fecha-header').textContent = document.getElementById('fecha').value || '--/--/----';
+    document.getElementById('hora-header').textContent = document.getElementById('hora').value || '--:--';
+  }
+
+  document.querySelectorAll('.damage-point').forEach(p => {
+    p.addEventListener('click', () => p.classList.toggle('marked'));
+  });
+
+  function actualizarTotal() {
+    const precioInput = document.getElementById('precio');
+    let valor = parseFloat(precioInput.value);
+    if (isNaN(valor) || valor < 0) valor = 0;
+    document.querySelector('.total').textContent = `Total: $${valor.toFixed(2)}`;
+  }
+
+  function guardarLocal() {
+    const data = obtenerDatos();
+    localStorage.setItem('recepcionVehiculo', JSON.stringify(data));
+    alert('Datos guardados localmente.');
+  }
+
+  function obtenerDatos() {
+    return {
+      orden: document.getElementById('orden').value,
+      fecha: document.getElementById('fecha').value,
+      hora: document.getElementById('hora').value,
+      nombre: document.getElementById('nombre').value,
+      telefono: document.getElementById('telefono').value,
+      correo: document.getElementById('correo').value,
+      direccion: document.getElementById('direccion').value,
+      marca: document.getElementById('marca').value,
+      modelo: document.getElementById('modelo').value,
+      anio: document.getElementById('anio').value,
+      serie: document.getElementById('serie').value,
+      placas: document.getElementById('placas').value,
+      color: document.getElementById('color').value,
+      kilometraje: document.getElementById('kilometraje').value,
+      servicio: document.getElementById('servicio').value,
+      estadoVehiculo: Array.from(document.querySelectorAll('input[name="estadoVehiculo"]:checked')).map(e => e.value),
+      danosDetalle: document.getElementById('danosDetalle').value,
+      objetosValor: document.getElementById('objetosValor').value,
+      observaciones: document.getElementById('observaciones').value,
+      dañosMarcados: Array.from(document.querySelectorAll('.damage-point.marked')).map(e => e.title),
+      precio: document.getElementById('precio').value
+    };
+  }
+</script>
+</body>
+</html>
